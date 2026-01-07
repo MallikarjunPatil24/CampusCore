@@ -87,11 +87,13 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("adminID");
-    navigate("/login");
-  };
+ const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("adminID");
+
+  // 🔥 Force App.js to re-check auth
+  window.location.replace("/login");
+};
 
   return (
     <Box sx={{ display: "flex" }}>

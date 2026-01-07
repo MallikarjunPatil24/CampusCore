@@ -9,6 +9,7 @@ import {
 import SplashScreen from "./components/SplashScreen";
 
 import LoginPage from "./pages/LoginPage";
+import AdminRegister from "./pages/AdminRegister";
 import AdminDashboard from "./pages/AdminDashboard";
 import ClassSection from "./pages/admin/ClassSection";
 import StudentRegistration from "./pages/admin/StudentRegistration";
@@ -19,32 +20,45 @@ import AttendancePage from "./pages/admin/AttendancePage";
 import MarksEntry from "./pages/admin/MarksEntry";
 import AddNotice from "./pages/admin/AddNotice";
 import StudentProfile from "./pages/admin/StudentProfile";
-import AdminRegister from "./pages/AdminRegister";
 
 function App() {
-  const [loading, setLoading] = useState(true);
-  const isAuthenticated = !!localStorage.getItem("token");
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // 🔹 Splash Screen Timer
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2000); // 2 seconds splash
+    useEffect(() => {
+        const checkToken = () => {
+            const token = localStorage.getItem("token");
+            if (token) {
+                setIsAuthenticated(true);
+            }
+            setTimeout(() => setIsCheckingAuth(false), 500); 
+        };
+        checkToken();
+    }, []);
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  // 🔹 Show splash screen first
-  if (loading) {
-    return <SplashScreen />;
-  }
+    if (isCheckingAuth) {
+        return <SplashScreen />; 
+    }
 
   return (
     <Router>
       <Routes>
-        {/* Public Route */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<AdminRegister />} />
+
+        {/* Public Routes */}
+        <Route
+          path="/login"
+          element={
+            isAuthenticated ? <Navigate to="/admin/dashboard" /> : <LoginPage />
+          }
+        />
+
+        <Route
+          path="/register"
+          element={
+            isAuthenticated ? <Navigate to="/admin/dashboard" /> : <AdminRegister />
+          }
+        />
+
         {/* Protected Admin Routes */}
         <Route
           path="/admin/dashboard"
@@ -52,47 +66,78 @@ function App() {
             isAuthenticated ? <AdminDashboard /> : <Navigate to="/login" />
           }
         />
+
         <Route
           path="/admin/classes"
           element={
             isAuthenticated ? <ClassSection /> : <Navigate to="/login" />
           }
         />
+
         <Route
           path="/admin/add-student"
           element={
             isAuthenticated ? <StudentRegistration /> : <Navigate to="/login" />
           }
         />
+
         <Route
           path="/admin/students"
-          element={isAuthenticated ? <StudentList /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? <StudentList /> : <Navigate to="/login" />
+          }
         />
+
+        <Route
+          path="/admin/students/:id"
+          element={
+            isAuthenticated ? <StudentProfile /> : <Navigate to="/login" />
+          }
+        />
+
         <Route
           path="/admin/subjects"
-          element={isAuthenticated ? <SubjectPage /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? <SubjectPage /> : <Navigate to="/login" />
+          }
         />
+
         <Route
           path="/admin/subjects/list"
-          element={isAuthenticated ? <SubjectList /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? <SubjectList /> : <Navigate to="/login" />
+          }
         />
+
         <Route
           path="/admin/attendance"
           element={
             isAuthenticated ? <AttendancePage /> : <Navigate to="/login" />
           }
         />
+
         <Route
           path="/admin/marks"
-          element={isAuthenticated ? <MarksEntry /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? <MarksEntry /> : <Navigate to="/login" />
+          }
         />
+
         <Route
           path="/admin/add-notice"
-          element={isAuthenticated ? <AddNotice /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? <AddNotice /> : <Navigate to="/login" />
+          }
         />
-        <Route path="/admin/students/:id" element={<StudentProfile />} />
-        {/* Default Redirect */}
-        <Route path="*" element={<Navigate to="/login" />} />
+
+        {/*  Fallback */}
+        <Route
+          path="*"
+          element={
+            <Navigate to={isAuthenticated ? "/admin/dashboard" : "/login"} />
+          }
+        />
+
       </Routes>
     </Router>
   );

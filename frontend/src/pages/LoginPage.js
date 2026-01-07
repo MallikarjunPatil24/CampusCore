@@ -25,15 +25,6 @@ const AdminLogin = () => {
     localStorage.getItem("darkMode") === "true"
   );
 
-  // ✅ Auto-redirect if token exists
- useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-        // Use 'replace: true' to prevent the user from clicking "back" to the login page
-        navigate("/admin/dashboard", { replace: true }); 
-    }
-}, [navigate]);
-
   useEffect(() => {
     localStorage.setItem("darkMode", darkMode);
   }, [darkMode]);
@@ -50,26 +41,26 @@ const AdminLogin = () => {
     shape: { borderRadius: 16 } // Smoother corners for modern design
   });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-        const res = await API.post('/AdminLogin', { email, password });
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-        if (res.data.token) {
-            // 2. Set items in a single block
-            localStorage.setItem('token', res.data.token);
-            const adminId = res.data.admin?.id || res.data.id;
-            localStorage.setItem('adminID', adminId);
+  try {
+    const res = await API.post("/AdminLogin", { email, password });
 
-            // 3. IMPORTANT: Stop the local loading state BEFORE navigating
-            setLoading(false); 
-            navigate('/admin/dashboard', { replace: true });
-        }
-    } catch (err) {
-        setLoading(false);
-        alert("Invalid credentials");
-    }
+   if (res.data.token) {
+  localStorage.setItem("token", res.data.token);
+  localStorage.setItem("adminID", res.data.admin.id);
+
+  // 🔥 FORCE App.js to re-evaluate auth
+  window.location.replace("/admin/dashboard");
+}
+
+  } catch (err) {
+    alert("Invalid credentials");
+  } finally {
+    setLoading(false);
+  }
 };
 
   return (
